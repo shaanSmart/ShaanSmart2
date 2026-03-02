@@ -127,3 +127,6 @@ export interface ColorSlot {
   value: string;
   idx: number;
 }
+
+export type MasteryLevel = 0 | 1 | 2 | 3
+export type DBChild = Child

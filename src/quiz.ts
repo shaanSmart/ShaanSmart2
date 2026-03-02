@@ -129,3 +129,27 @@ export function getFallbackBank(subj: string, grade: number): Question[] {
     default:        return scienceBank()
   }
 }
+
+export async function loadQuestionsForCategory(
+  childId: string | null, subject: string, grade: number, tags: string[]
+) {
+  const { loadAdaptiveQuestions, loadQuestionsByTags } = await import('./db')
+  const { resolveSubject } = await import('./categories')
+  const realSubj = resolveSubject(subject)
+  if (childId && tags.length === 0) {
+    const a = await loadAdaptiveQuestions(childId, realSubj, grade)
+    if (a?.length) return a
+  }
+  const t = await loadQuestionsByTags(realSubj, grade, tags)
+  if (t?.length) return t
+  if (childId) return loadAdaptiveQuestions(childId, realSubj, grade)
+  return null
+}
+
+export async function trackAnswer(
+  childId: string | null, question: { id: string | null }, isCorrect: boolean
+) {
+  if (!childId || !question.id) return
+  const { recordAnswer } = await import('./db')
+  await recordAnswer(childId, question.id, isCorrect)
+}

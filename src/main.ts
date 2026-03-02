@@ -3,8 +3,8 @@
 // Wires all modules together, handles screens and user interactions
 // ══════════════════════════════════════════════════════════════════════
 
-import { supa, signIn, signUp, signOut, getSession, getAccountName, getChildren, addChild, updateChildStars, saveSession, saveGameBest, getGameBest, recordAnswer } from './db'
-import { loadQuestionsForCategory, trackAnswer, buildColorMap, randomCheer, shuffle, mathBank, readingBank, lifeBank, scienceBank, getFallbackBank, fontSizeForLength, masteryLabel, masteryClass, CHEERS } from './quiz'
+import { supa, signIn, signUp, signOut, getSession, getAccountName, getChildren, addChild, updateChildStars, saveSession } from './db'
+import { loadQuestionsForCategory, trackAnswer, buildColorMap, randomCheer, shuffle, getFallbackBank, fontSizeForLength, masteryLabel, masteryClass } from './quiz'
 import { speak, cheer, gentle, cancelSpeech, configureVoice, setupMic, toggleMic, stopMic, isMicOn, loadVoice } from './speech'
 import { loadConfig, saveConfig, getConfig, updateConfig, toggleConfig } from './settings'
 import { loadProgress, getProgress, logSession, syncStarsFromDB } from './progress'
