@@ -92,3 +92,4 @@ export function getCategorySections(subject: string): CategorySection[] {
       ];
     default:
       return [];
+}
