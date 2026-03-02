@@ -1,8 +1,11 @@
-// Global test setup — runs before every test file
-import { vi } from 'vitest'
+import { vi, beforeEach } from 'vitest'
 
-// Mock localStorage
 const storage: Record<string, string> = {}
+
+beforeEach(() => {
+  Object.keys(storage).forEach(k => delete storage[k])
+})
+
 Object.defineProperty(window, 'localStorage', {
   value: {
     getItem: (key: string) => storage[key] ?? null,
@@ -13,17 +16,7 @@ Object.defineProperty(window, 'localStorage', {
   writable: true,
 })
 
-// Mock speechSynthesis
 Object.defineProperty(window, 'speechSynthesis', {
-  value: {
-    speak: vi.fn(),
-    cancel: vi.fn(),
-    getVoices: () => [],
-    onvoiceschanged: null,
-  },
+  value: { speak: vi.fn(), cancel: vi.fn(), getVoices: () => [], onvoiceschanged: null },
   writable: true,
 })
-
-// Mock SpeechRecognition
-;(window as Window & { SpeechRecognition?: unknown }).SpeechRecognition = undefined
-;(window as Window & { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition = undefined

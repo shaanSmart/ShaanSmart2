@@ -5,11 +5,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
-      include: ['src/**/*.ts'],
-      exclude: ['src/main.ts'],  // main.ts is covered by e2e
-    },
+    include: ['tests/unit/**/*.test.ts'],
+    exclude: ['tests/e2e/**'],
   },
 })
