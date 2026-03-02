@@ -94,3 +94,5 @@ export function getCategorySections(subject: string): CategorySection[] {
       return [];
   }
 }
+
+export { SUBJECTS, getCategoriesForSubject, getSectionsForSubject, findCategory, resolveSubject }
