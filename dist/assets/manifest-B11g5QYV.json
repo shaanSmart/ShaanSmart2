@@ -1,0 +1,26 @@
+{
+  "name": "ShaanSmart",
+  "short_name": "ShaanSmart",
+  "description": "Shaan's personalized learning app",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#f0f4ff",
+  "theme_color": "#2a5fa8",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "kids"],
+  "lang": "en"
+}

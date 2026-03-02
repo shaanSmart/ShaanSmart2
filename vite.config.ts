@@ -1,14 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/shaansmart2/',
+  base: '/ShaanSmart2/',
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    emptyOutDir: true,
   },
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    include: ['tests/unit/**/*.test.ts'],
-  },
-});
+})
