@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ShaanSmart">
+<meta name="theme-color" content="#2a5fa8">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>ShaanSmart</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0"></script>
+
+<style>
+
+
+
+/* ══ AUTH SCREEN ══════════════════════════════════ */
+#auth{background:linear-gradient(160deg,#1e3a7a,#2a5fa8,#4a8fd8);align-items:center;justify-content:center;padding:24px;}
+.auth-logo{font-size:3.5rem;animation:float 3s ease-in-out infinite;margin-bottom:8px;}
+.auth-title{font-size:clamp(1.8rem,7vw,2.6rem);font-weight:900;color:white;margin-bottom:4px;}
+.auth-sub{font-size:.85rem;color:rgba(255,255,255,.7);font-weight:700;margin-bottom:28px;text-align:center;}
+.auth-card{background:white;border-radius:24px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.2);}
+.auth-tabs{display:flex;background:#eef1fb;border-radius:12px;padding:3px;margin-bottom:20px;}
+.auth-tab{flex:1;padding:8px;border:none;background:none;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;cursor:pointer;border-radius:10px;color:#8890aa;transition:all .15s;}
+.auth-tab.active{background:white;color:#2a5fa8;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.auth-field{width:100%;border:2px solid #dde3f5;border-radius:12px;padding:12px 16px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:700;color:#1a1a2e;margin-bottom:12px;outline:none;transition:border .15s;}
+.auth-field:focus{border-color:#5b9bd5;}
+.auth-submit{width:100%;background:linear-gradient(135deg,#2a5fa8,#5b9bd5);border:none;border-radius:14px;padding:14px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;color:white;cursor:pointer;margin-top:4px;transition:transform .15s;}
+.auth-submit:active{transform:scale(.97);}
+.auth-err{background:#ffe5e5;color:#a81a1a;border-radius:10px;padding:8px 12px;font-size:.8rem;font-weight:800;margin-bottom:12px;display:none;}
+.auth-err.show{display:block;}
+
+
+/* ══ PROFILE SELECT ═══════════════════════════════ */
+#profiles{background:linear-gradient(160deg,#1e3a7a,#2a5fa8,#4a8fd8);overflow-y:auto;align-items:center;padding:env(safe-area-inset-top,20px) 20px env(safe-area-inset-bottom,20px);}
+.prof-title{font-size:clamp(1.4rem,6vw,2rem);font-weight:900;color:white;margin-top:10px;margin-bottom:4px;}
+.prof-sub{font-size:.85rem;color:rgba(255,255,255,.7);font-weight:700;margin-bottom:20px;}
+.prof-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:500px;margin-bottom:16px;}
+.prof-card{background:rgba(255,255,255,.15);border:3px solid rgba(255,255,255,.25);border-radius:20px;padding:20px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s;}
+.prof-card:active{transform:scale(.96);}
+.prof-card.add{background:rgba(255,255,255,.08);border-style:dashed;}
+.prof-avatar{font-size:2.8rem;}
+.prof-name{font-size:.9rem;font-weight:900;color:white;}
+.prof-grade{font-size:.7rem;color:rgba(255,255,255,.65);font-weight:700;}
+.prof-signout{background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);border-radius:30px;padding:8px 20px;font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:800;color:rgba(255,255,255,.7);cursor:pointer;margin-top:8px;}
+
+/* ══ ADD CHILD MODAL ══════════════════════════════ */
+#add-child-modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+#add-child-modal.show{display:flex;}
+.modal-card{background:white;border-radius:24px;padding:24px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.3);}
+.modal-title{font-size:1.2rem;font-weight:900;color:#1a1a2e;margin-bottom:16px;}
+.avatar-picker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.avatar-opt{font-size:1.8rem;width:48px;height:48px;border-radius:12px;border:3px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#eef1fb;}
+.avatar-opt.sel{border-color:#5b9bd5;background:#ddeeff;}
+.modal-btns{display:flex;gap:8px;margin-top:8px;}
+.modal-btn{flex:1;padding:12px;border-radius:12px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:900;cursor:pointer;border:none;}
+.modal-btn.primary{background:#2a5fa8;color:white;}
+.modal-btn.secondary{background:#eef1fb;color:#2a5fa8;}
+.modal-card .gs-btn{background:#eef1fb;border-color:#dde3f5;color:#2a5fa8;padding:6px 14px;font-size:.78rem;}
+.modal-card .gs-btn.active{background:#2a5fa8;border-color:#2a5fa8;color:white;}
+
+/* Loading spinner */
+.spinner{display:none;width:36px;height:36px;border:4px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;margin:20px auto;}
+.spinner.show{display:block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#eef1fb;--muted:#8890aa;
+  --blue-bg:#ddeeff;--blue-mid:#5b9bd5;--blue-txt:#1a3d70;
+  --green-bg:#d4f5e2;--green-mid:#3db87a;--green-deep:#1a7a4a;--green-txt:#0d4a2a;
+  --purple-bg:#ece5ff;--purple-mid:#9b7fd4;--purple-txt:#32196e;
+  --red-bg:#ffe5e5;--red-mid:#e85555;--red-deep:#a81a1a;--red-txt:#6e0d0d;
+}
+html,body{height:100%;overflow:hidden;font-family:'Nunito',sans-serif;color:#1a1a2e;user-select:none;-webkit-user-select:none;}
+
+/* SCREENS — each locks to full viewport */
+.screen{position:fixed;top:0;left:0;right:0;bottom:0;display:none;flex-direction:column;overflow:hidden;background:var(--bg);}
+.screen.active{display:flex;}
+
+/* HOME */
+#home{background:linear-gradient(160deg,#1e3a7a,#2a5fa8,#4a8fd8);overflow-y:auto;align-items:center;padding:env(safe-area-inset-top,16px) 20px env(safe-area-inset-bottom,16px);gap:0;}
+.home-logo{font-size:3.5rem;margin-top:12px;animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.home-title{font-size:clamp(1.8rem,7vw,2.8rem);font-weight:900;color:white;margin-top:4px;}
+.home-sub{font-size:.9rem;color:rgba(255,255,255,.7);font-weight:700;margin-top:2px;margin-bottom:14px;}
+.stars-strip{background:rgba(255,255,255,.15);border-radius:40px;padding:7px 20px;color:white;font-weight:900;font-size:.9rem;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.sec-lbl{color:rgba(255,255,255,.7);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;align-self:flex-start;margin-bottom:6px;}
+.grade-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-self:flex-start;}
+.grade-btn{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);border-radius:40px;padding:6px 16px;font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:800;cursor:pointer;color:white;transition:all .15s;}
+.grade-btn.active{background:white;color:#2a5fa8;border-color:white;}
+.subject-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:500px;margin-bottom:14px;}
+.subject-card{border-radius:18px;padding:18px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform .15s;box-shadow:0 6px 20px rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.2);position:relative;}
+.subject-card:active{transform:scale(.96);}
+.subject-card.math{background:linear-gradient(135deg,#2a5fa8,#5b9bd5);}
+.subject-card.read{background:linear-gradient(135deg,#1a7a4a,#3db87a);}
+.subject-card.life{background:linear-gradient(135deg,#a84a10,#f07a3a);}
+.subject-card.sci{background:linear-gradient(135deg,#5c3db8,#9b7fd4);}
+.subject-card.vocab{background:linear-gradient(135deg,#a8006a,#e040a0);}
+.s-badge{position:absolute;top:8px;right:10px;background:rgba(255,255,255,.25);border-radius:20px;padding:2px 8px;font-size:.6rem;font-weight:900;color:white;}
+.s-icon{font-size:2rem;}.s-name{font-size:.88rem;font-weight:900;color:white;}.s-count{font-size:.63rem;color:rgba(255,255,255,.75);font-weight:700;}
+.nav-bar{display:flex;background:white;box-shadow:0 -2px 10px rgba(0,0,0,.08);flex-shrink:0;width:100%;padding-bottom:env(safe-area-inset-bottom,0px);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;cursor:pointer;border:none;background:none;font-family:'Nunito',sans-serif;gap:2px;}
+.nav-icon{font-size:1.3rem;}.nav-label{font-size:.65rem;font-weight:800;color:var(--muted);}
+.nav-item.active .nav-label{color:#2a5fa8;}
+
+/* QUIZ — strict column layout */
+#quiz{background:var(--bg);}
+.quiz-hdr{display:flex;align-items:center;gap:12px;padding:env(safe-area-inset-top,10px) 16px 10px;background:white;box-shadow:0 2px 8px rgba(0,0,0,.07);flex-shrink:0;}
+.back-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:4px 8px;border-radius:8px;}
+.quiz-subj{font-size:1rem;font-weight:900;}
+.quiz-stars{margin-left:auto;font-size:.88rem;font-weight:800;color:#9a6e00;background:#fff9e0;border-radius:30px;padding:4px 12px;}
+.prog-wrap{padding:6px 16px 4px;flex-shrink:0;}
+.prog-lbl{font-size:.68rem;font-weight:800;color:var(--muted);margin-bottom:3px;}
+.prog-bg{background:#dde3f5;border-radius:40px;height:8px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:40px;transition:width .5s ease;background:#5b9bd5;}
+
+/* Question card — no scroll, shrinks to content */
+.q-box{margin:8px 14px 0;background:white;border-radius:18px;box-shadow:0 3px 12px rgba(0,0,0,.07);padding:12px 18px;text-align:center;flex-shrink:0;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.q-badge{display:inline-block;border-radius:40px;padding:2px 10px;font-size:.6rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.q-img{font-size:2.2rem;margin-bottom:2px;}
+.q-text{font-size:clamp(2.2rem,8vw,4rem);font-weight:900;line-height:1.2;}
+
+/* Feedback — hidden until answered */
+.feedback{margin:5px 14px 0;border-radius:12px;padding:7px 14px;font-size:.88rem;font-weight:800;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;opacity:0;transition:opacity .3s;}
+.feedback.show{opacity:1;}
+.feedback.good{background:var(--green-bg);color:var(--green-deep);}
+.feedback.bad{background:var(--red-bg);color:var(--red-deep);}
+.eq{font-size:1rem;font-weight:900;}
+
+/* Mic status — invisible unless active */
+.mic-st{margin:3px 14px 0;border-radius:8px;padding:4px 12px;font-size:.72rem;font-weight:800;text-align:center;flex-shrink:0;opacity:0;transition:opacity .2s;}
+.mic-st.listening{opacity:1;background:var(--green-bg);color:var(--green-deep);animation:pulse 1s ease infinite;}
+.mic-st.heard{opacity:1;background:#fff8d6;color:#7a5500;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ANSWERS — fills ALL remaining vertical space */
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;padding:10px 18px 14px;flex:1;min-height:0;}
+.ans-btn.long-ans .btn-num{font-size:clamp(.85rem,3.5vw,1.4rem);line-height:1.3;padding:10px 6px;}
+
+.ans-btn{border:5px solid transparent;border-radius:26px;cursor:pointer;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;box-shadow:0 5px 18px rgba(0,0,0,.12);transition:transform .14s;}
+.ans-btn:active{transform:scale(.96);}
+.btn-bar{height:20px;flex-shrink:0;border-radius:20px 20px 0 0;}
+.btn-num{flex:1;display:flex;align-items:center;justify-content:center;font-size:clamp(1rem,5vw,9rem);font-weight:900;line-height:1.15;padding:10px 8px;text-align:center;overflow:hidden;word-break:break-word;hyphens:auto;}
+
+.ans-btn.blue{background:var(--blue-bg);border-color:var(--blue-mid);}
+.ans-btn.blue .btn-bar{background:var(--blue-mid);}
+.ans-btn.blue .btn-num{color:var(--blue-txt);}
+.ans-btn.green{background:var(--green-bg);border-color:var(--green-mid);}
+.ans-btn.green .btn-bar{background:var(--green-mid);}
+.ans-btn.green .btn-num{color:var(--green-txt);}
+.ans-btn.purple{background:var(--purple-bg);border-color:var(--purple-mid);}
+.ans-btn.purple .btn-bar{background:var(--purple-mid);}
+.ans-btn.purple .btn-num{color:var(--purple-txt);}
+.ans-btn.red{background:var(--red-bg);border-color:var(--red-mid);}
+.ans-btn.red .btn-bar{background:var(--red-mid);}
+.ans-btn.red .btn-num{color:var(--red-txt);}
+.ans-btn.correct{box-shadow:0 0 0 7px var(--green-mid)!important;animation:pop .3s ease;}
+.ans-btn.wrong{opacity:.3;}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
+
+.quiz-bottom{background:white;box-shadow:0 -2px 10px rgba(0,0,0,.07);padding:10px 20px calc(env(safe-area-inset-bottom,0px) + 10px);display:flex;align-items:center;justify-content:center;gap:20px;flex-shrink:0;}
+.mic-btn{width:60px;height:60px;border-radius:50%;border:none;background:var(--blue-mid);color:white;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 16px rgba(74,127,224,.4);transition:all .15s;}
+.mic-btn.active{background:var(--green-mid);animation:pulse 1s ease infinite;}
+.next-btn{background:#2a5fa8;color:white;border:none;border-radius:14px;padding:14px 30px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;cursor:pointer;display:none;}
+
+/* PROGRESS */
+#progress{background:var(--bg);}
+/* ══ GAME SETUP ═══════════════════════════════ */
+#game-setup{background:linear-gradient(160deg,#1a1a4e,#2a2a8a,#4a4ac8);overflow-y:auto;align-items:center;padding:env(safe-area-inset-top,20px) 20px env(safe-area-inset-bottom,20px);}
+.gs-title{font-size:clamp(1.6rem,7vw,2.4rem);font-weight:900;color:white;margin-top:10px;}
+.gs-sub{font-size:.85rem;color:rgba(255,255,255,.7);font-weight:700;margin-top:2px;margin-bottom:14px;}
+.gs-section{color:rgba(255,255,255,.7);font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;align-self:flex-start;margin-bottom:8px;margin-top:14px;}
+.gs-row{display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start;}
+.gs-btn{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);border-radius:40px;padding:8px 18px;font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;cursor:pointer;color:white;transition:all .15s;}
+.gs-btn.active{background:white;color:#2a2a8a;border-color:white;}
+.gs-subj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:500px;margin-top:4px;}
+.gs-subj-card{border-radius:16px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .15s;box-shadow:0 4px 14px rgba(0,0,0,.2);border:3px solid transparent;opacity:.65;}
+.gs-subj-card:active{transform:scale(.96);}
+.gs-subj-card.sel{border-color:white;opacity:1;box-shadow:0 0 0 4px rgba(255,255,255,.35);}
+.gs-subj-card.math{background:linear-gradient(135deg,#2a5fa8,#5b9bd5);}
+.gs-subj-card.read{background:linear-gradient(135deg,#1a7a4a,#3db87a);}
+.gs-subj-card.life{background:linear-gradient(135deg,#a84a10,#f07a3a);}
+.gs-subj-card.sci{background:linear-gradient(135deg,#5c3db8,#9b7fd4);}
+.gs-subj-card.mix{background:linear-gradient(135deg,#7a1a7a,#d45bd4);}
+.gs-s-icon{font-size:1.6rem;}.gs-s-name{font-size:.8rem;font-weight:900;color:white;}
+.gs-start{background:white;color:#2a2a8a;border:none;border-radius:20px;padding:16px 50px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:900;cursor:pointer;margin-top:20px;box-shadow:0 6px 20px rgba(0,0,0,.2);transition:transform .15s;}
+.gs-start:active{transform:scale(.96);}
+
+/* ══ GAME SCREEN ══════════════════════════════ */
+#game{background:var(--bg);}
+.game-hdr{display:flex;align-items:center;gap:10px;padding:env(safe-area-inset-top,10px) 16px 10px;background:white;box-shadow:0 2px 8px rgba(0,0,0,.07);flex-shrink:0;}
+.game-subj{font-size:.95rem;font-weight:900;}
+.game-score-wrap{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;}
+.game-score-lbl{font-size:.55rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.game-score{font-size:1.6rem;font-weight:900;color:#2a5fa8;line-height:1;}
+.timer-wrap{padding:8px 16px 2px;flex-shrink:0;}
+.timer-bg{background:#dde3f5;border-radius:40px;height:16px;overflow:hidden;}
+.timer-fill{height:100%;border-radius:40px;background:linear-gradient(90deg,#e85555 0%,#f0a030 50%,#3db87a 100%);transition:width .25s linear;}
+
+/* ══ READING PASSAGE ══════════════════════════════ */
+.passage-box{background:rgba(255,255,255,.92);border-radius:16px;padding:14px 16px;margin:0 0 10px 0;text-align:left;max-height:200px;overflow-y:auto;border:2px solid #ddeeff;}
+.passage-label{font-size:.7rem;font-weight:900;color:#2a5fa8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.passage-text{font-size:.82rem;line-height:1.55;color:#333;font-weight:500;white-space:pre-wrap;}
+
+/* ══ CATEGORY MENU SCREEN ═══════════════════════════ */
+#category{background:linear-gradient(160deg,#1e3a7a,#2a5fa8,#4a8fd8);overflow-y:auto;align-items:center;padding:env(safe-area-inset-top,16px) 20px env(safe-area-inset-bottom,24px);}
+.cat-hdr{display:flex;align-items:center;gap:12px;width:100%;max-width:500px;margin-bottom:4px;padding-top:4px;}
+.cat-back{background:rgba(255,255,255,.15);border:none;border-radius:50%;width:40px;height:40px;font-size:1.3rem;color:white;cursor:pointer;flex-shrink:0;}
+.cat-title{font-size:clamp(1.4rem,6vw,2rem);font-weight:900;color:white;}
+.cat-sub{font-size:.82rem;color:rgba(255,255,255,.7);font-weight:700;margin-bottom:18px;width:100%;max-width:500px;text-align:left;}
+.cat-section{font-size:.68rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.55);width:100%;max-width:500px;margin-bottom:8px;margin-top:16px;}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;width:100%;max-width:500px;margin-bottom:4px;}
+.cat-card{border-radius:18px;padding:16px 12px 14px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;transition:transform .15s;box-shadow:0 5px 18px rgba(0,0,0,.18);border:2px solid rgba(255,255,255,.18);text-align:center;}
+.cat-card:active{transform:scale(.95);}
+.cat-icon{font-size:1.8rem;line-height:1;}
+.cat-name{font-size:.88rem;font-weight:900;color:white;line-height:1.2;}
+.cat-desc{font-size:.64rem;color:rgba(255,255,255,.7);font-weight:700;line-height:1.3;}
+/* Math category colors */
+.cat-card.c1{background:linear-gradient(135deg,#1a6abf,#4a9fd8);}
+.cat-card.c2{background:linear-gradient(135deg,#1a7a4a,#3db87a);}
+.cat-card.c3{background:linear-gradient(135deg,#7a3db8,#b07fd4);}
+.cat-card.c4{background:linear-gradient(135deg,#b85a1a,#e08a3a);}
+.cat-card.c5{background:linear-gradient(135deg,#1a6a6a,#3ab8b8);}
+.cat-card.c6{background:linear-gradient(135deg,#6a1a6a,#c84ac8);}
+.cat-card.c7{background:linear-gradient(135deg,#8a1a2a,#d84a5a);}
+.cat-card.c8{background:linear-gradient(135deg,#2a5a1a,#5ab84a);}
+.cat-card.c9{background:linear-gradient(135deg,#1a3a7a,#4a6ab8);}
+.cat-card.c10{background:linear-gradient(135deg,#5a1a1a,#b84a4a);}
+/* Russian math — special gold */
+.cat-card.russian{background:linear-gradient(135deg,#7a5a00,#c8a000);border:2px solid rgba(255,220,50,.4);}
+/* Full-width card */
+.cat-card.wide{grid-column:1/-1;flex-direction:row;gap:14px;justify-content:flex-start;padding:14px 18px;}
+.cat-card.wide .cat-icon{font-size:2.2rem;}
+.cat-card.wide .cat-name{font-size:1rem;text-align:left;}
+.cat-card.wide .cat-desc{text-align:left;}
+
+.mastery-hint{font-size:.75rem;font-weight:800;opacity:.85;margin-top:4px;letter-spacing:.02em;}
+.q-meta{display:flex;gap:8px;justify-content:center;margin-bottom:4px;flex-wrap:wrap;}
+.q-meta-badge{font-size:.65rem;font-weight:900;padding:2px 8px;border-radius:20px;background:rgba(0,0,0,.06);color:#555;}
+.q-meta-badge.mastered{background:#e8f8e8;color:#2a7a2a;}
+.q-meta-badge.struggling{background:#fff0e8;color:#a05020;}
+.q-meta-badge.practicing{background:#e8f0ff;color:#2a5fa8;}
+.score-flash{position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);font-size:2.8rem;font-weight:900;pointer-events:none;opacity:0;z-index:500;}
+.score-flash.plus{color:var(--green-deep);animation:flashUp .7s ease forwards;}
+.score-flash.minus{color:#c0392b;animation:flashUp .7s ease forwards;}
+@keyframes flashUp{0%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-120%)}}
+
+/* ══ GAME END ═════════════════════════════════ */
+#game-end{background:linear-gradient(160deg,#1a1a4e,#2a2a8a,#4a4ac8);align-items:center;justify-content:center;text-align:center;padding:32px 24px;overflow-y:auto;}
+.ge-trophy{font-size:5rem;animation:bounce .7s ease infinite alternate;margin-bottom:6px;}
+.ge-title{font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;color:white;margin-bottom:4px;}
+.ge-score{font-size:clamp(4rem,18vw,7rem);font-weight:900;color:#ffd700;line-height:1;margin:8px 0;}
+.ge-score-lbl{font-size:.9rem;color:rgba(255,255,255,.7);font-weight:800;margin-bottom:16px;}
+.ge-best{background:rgba(255,255,255,.15);border-radius:16px;padding:12px 24px;color:white;font-weight:800;font-size:.95rem;margin-bottom:20px;}
+.ge-best.new-record{background:rgba(255,215,0,.2);border:2px solid gold;animation:glow 1.5s ease infinite alternate;}
+@keyframes glow{from{box-shadow:0 0 8px rgba(255,215,0,.3)}to{box-shadow:0 0 24px rgba(255,215,0,.8)}}
+.ge-btn{background:white;color:#2a2a8a;border:none;border-radius:16px;padding:14px 34px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;cursor:pointer;margin:5px;}
+.ge-btn.outline{background:transparent;border:2px solid rgba(255,255,255,.5);color:white;}
+
+
+/* ══ SETTINGS SCREEN ════════════════════════════ */
+#settings{background:linear-gradient(160deg,#1e3a7a,#2a5fa8,#4a8fd8);overflow-y:auto;align-items:center;padding:env(safe-area-inset-top,20px) 20px env(safe-area-inset-bottom,20px);}
+.set-hdr{display:flex;align-items:center;gap:12px;align-self:flex-start;margin-bottom:20px;width:100%;}
+.set-title{font-size:clamp(1.4rem,6vw,2rem);font-weight:900;color:white;}
+.set-card{background:rgba(255,255,255,.12);border-radius:20px;padding:16px 18px;width:100%;max-width:500px;margin-bottom:14px;}
+.set-card-title{font-size:.7rem;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);}
+.set-row:last-child{border-bottom:none;}
+.set-row-label{font-size:.9rem;font-weight:800;color:white;}
+.set-row-sub{font-size:.7rem;color:rgba(255,255,255,.55);font-weight:700;margin-top:1px;}
+.set-toggle{width:52px;height:30px;border-radius:30px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.set-toggle.on{background:#3db87a;}.set-toggle.off{background:rgba(255,255,255,.25);}
+.set-toggle::after{content:'';position:absolute;top:3px;width:24px;height:24px;border-radius:50%;background:white;transition:left .2s;box-shadow:0 2px 4px rgba(0,0,0,.2);}
+.set-toggle.on::after{left:25px;}.set-toggle.off::after{left:3px;}
+.set-opts{display:flex;gap:6px;flex-wrap:wrap;}
+.set-opt{background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.3);border-radius:30px;padding:5px 14px;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:800;cursor:pointer;color:white;transition:all .15s;}
+.set-opt.active{background:white;color:#2a5fa8;border-color:white;}
+.vol-row{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.vol-slider{flex:1;height:6px;border-radius:6px;accent-color:#3db87a;cursor:pointer;}
+
+/* ══ CALM / BREAK SCREEN ════════════════════════ */
+#calm{background:linear-gradient(160deg,#0a1628,#0d2444,#0a1e38);align-items:center;justify-content:center;text-align:center;padding:32px;}
+.calm-title{font-size:clamp(1.4rem,5vw,2rem);font-weight:900;color:rgba(255,255,255,.9);margin-bottom:6px;}
+.calm-sub{font-size:.9rem;color:rgba(255,255,255,.5);font-weight:700;margin-bottom:30px;}
+.calm-anim{position:relative;width:180px;height:180px;margin:0 auto 24px;}
+.calm-circle{position:absolute;border-radius:50%;animation:calmPulse 4s ease-in-out infinite;}
+.calm-c1{width:180px;height:180px;background:rgba(74,120,200,.15);top:0;left:0;animation-delay:0s;}
+.calm-c2{width:130px;height:130px;background:rgba(74,120,200,.2);top:25px;left:25px;animation-delay:.5s;}
+.calm-c3{width:80px;height:80px;background:rgba(100,160,255,.35);top:50px;left:50px;animation-delay:1s;}
+.calm-note{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:2.5rem;}
+@keyframes calmPulse{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.12);opacity:1}}
+.calm-timer-wrap{width:200px;margin:0 auto 20px;}
+.calm-timer-bg{background:rgba(255,255,255,.1);border-radius:40px;height:10px;overflow:hidden;}
+.calm-timer-fill{height:100%;border-radius:40px;background:linear-gradient(90deg,#5b9bd5,#9b7fd4);transition:width 1s linear;}
+.calm-timer-lbl{font-size:.75rem;color:rgba(255,255,255,.5);font-weight:800;margin-top:6px;}
+.calm-ready-btn{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);border-radius:20px;padding:14px 36px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;color:white;cursor:pointer;margin-top:8px;}
+.calm-ready-btn:active{transform:scale(.96);}
+
+/* BREAK BUTTON styles */
+.break-btn-big{background:rgba(91,155,213,.9);border:none;border-radius:16px;padding:10px 16px;font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:900;color:white;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.2);display:none;}
+.break-btn-small{background:rgba(91,155,213,.7);border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15);display:none;}
+.break-btn-big.show,.break-btn-small.show{display:block;}
+
+/* MUTE button in quiz header */
+.mute-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:4px;border-radius:8px;margin-left:4px;}
+
+/* TRANSITION WARNING */
+.transition-warn{margin:4px 14px 0;background:rgba(255,200,50,.15);border:1px solid rgba(255,200,50,.3);border-radius:10px;padding:5px 14px;font-size:.72rem;font-weight:800;color:#8a6800;text-align:center;flex-shrink:0;display:none;}
+.transition-warn.show{display:block;}
+.prog-hdr{background:white;padding:env(safe-area-inset-top,12px) 18px 12px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);flex-shrink:0;}
+.prog-hdr h2{font-size:1.1rem;font-weight:900;}
+.prog-content{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+.stat-card{background:white;border-radius:18px;padding:16px 18px;box-shadow:0 3px 12px rgba(0,0,0,.07);}
+.stat-card h3{font-size:.7rem;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f0f0f0;}
+.stat-row:last-child{border-bottom:none;}
+.stat-lbl{font-size:.88rem;font-weight:700;}
+.stat-val{font-size:.95rem;font-weight:900;}
+.stat-val.green{color:var(--green-deep);}
+.subj-bar{height:8px;border-radius:8px;background:#eee;overflow:hidden;flex:1;margin:0 10px;}
+.subj-fill{height:100%;border-radius:8px;transition:width .6s ease;}
+.print-btn{background:#2a5fa8;color:white;border:none;border-radius:14px;padding:14px;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:900;cursor:pointer;text-align:center;}
+
+/* CELEBRATION */
+.cel{position:fixed;inset:0;background:rgba(255,255,255,.97);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;z-index:999;padding:32px;}
+.cel.show{display:flex;animation:fadeUp .35s ease;}
+.trophy{font-size:5rem;animation:bounce .7s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.cel h1{font-size:clamp(1.6rem,6vw,2.2rem);font-weight:900;color:#2a5fa8;}
+.cel p{font-size:1rem;color:var(--muted);font-weight:700;max-width:420px;}
+.cel-btn{background:#2a5fa8;color:white;border:none;border-radius:16px;padding:14px 34px;font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;cursor:pointer;margin-top:4px;}
+.cel-btn.outline{background:transparent;border:3px solid #2a5fa8;color:#2a5fa8;}
+</style>
+</head>
+<body>
+
+
+<!-- AUTH -->
+<div class="screen active" id="auth">
+  <div class="auth-logo">🌟</div>
+  <div class="auth-title">ShaanSmart</div>
+  <div class="auth-sub">Learning made for every child</div>
+  <div class="auth-card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="authTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-signup" onclick="authTab('signup')">Create Account</button>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+    <input class="auth-field" id="auth-name" type="text" placeholder="Your name" autocomplete="name" style="display:none">
+    <input class="auth-field" id="auth-email" type="email" placeholder="Email address" autocomplete="email">
+    <input class="auth-field" id="auth-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')setTimeout(()=>authSubmit(),100)">
+    <button class="auth-submit" id="auth-btn" onclick="setTimeout(()=>authSubmit(),100)">Sign In</button>
+  </div>
+</div>
+
+<!-- PROFILE SELECT -->
+<div class="screen" id="profiles">
+  <div style="font-size:2.5rem;margin-top:8px">👋</div>
+  <div class="prof-title">Who's learning today?</div>
+  <div class="prof-sub" id="prof-account-name">Welcome back!</div>
+  <div class="prof-grid" id="prof-grid">
+    <div class="spinner show" style="grid-column:1/-1"></div>
+  </div>
+  <button class="prof-signout" onclick="signOut()">Sign Out</button>
+</div>
+
+<!-- ADD CHILD MODAL -->
+<div id="add-child-modal">
+  <div class="modal-card">
+    <div class="modal-title">Add a Child Profile 🌟</div>
+    <div class="auth-err" id="child-err"></div>
+    <div class="avatar-picker" id="avatar-picker">
+      <div class="avatar-opt sel" data-emoji="🌟" onclick="pickAvatar(this)">🌟</div>
+      <div class="avatar-opt" data-emoji="🦁" onclick="pickAvatar(this)">🦁</div>
+      <div class="avatar-opt" data-emoji="🐬" onclick="pickAvatar(this)">🐬</div>
+      <div class="avatar-opt" data-emoji="🦋" onclick="pickAvatar(this)">🦋</div>
+      <div class="avatar-opt" data-emoji="🚀" onclick="pickAvatar(this)">🚀</div>
+      <div class="avatar-opt" data-emoji="🌈" onclick="pickAvatar(this)">🌈</div>
+      <div class="avatar-opt" data-emoji="⚡" onclick="pickAvatar(this)">⚡</div>
+      <div class="avatar-opt" data-emoji="🎮" onclick="pickAvatar(this)">🎮</div>
+    </div>
+    <input class="auth-field" id="child-name" type="text" placeholder="Child's first name">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <span style="font-weight:800;font-size:.9rem;color:#444">Grade</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="gs-btn active" id="cg1" onclick="pickChildGrade(1,this)">1</button>
+        <button class="gs-btn" id="cg2" onclick="pickChildGrade(2,this)">2</button>
+        <button class="gs-btn" id="cg3" onclick="pickChildGrade(3,this)">3</button>
+        <button class="gs-btn" id="cg4" onclick="pickChildGrade(4,this)">4</button>
+        <button class="gs-btn" id="cg5" onclick="pickChildGrade(5,this)">5</button>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn secondary" onclick="closeAddChild()">Cancel</button>
+      <button class="modal-btn primary" onclick="saveChild()">Save ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="home">
+  <div class="home-logo">🌟</div>
+  <div class="home-title">ShaanSmart</div>
+  <div class="home-sub">Shaan's Learning Adventure</div>
+  <div class="stars-strip">⭐ <span id="home-stars">0</span> stars &nbsp;·&nbsp; 🔥 <span id="home-streak">0</span> day streak</div>
+  <div class="sec-lbl">Grade Level</div>
+  <div class="grade-row">
+    <button class="grade-btn active" onclick="setGrade(2)" id="g2">Grade 2</button>
+    <button class="grade-btn" onclick="setGrade(3)" id="g3">Grade 3</button>
+    <button class="grade-btn" onclick="setGrade(4)" id="g4">Grade 4</button>
+    <button class="grade-btn" onclick="setGrade(5)" id="g5">Grade 5</button>
+    <button class="grade-btn" onclick="setGrade(6)" id="g6">Grade 6</button>
+  </div>
+  <div class="sec-lbl" style="margin-top:4px">Choose a Subject</div>
+  <div class="subject-grid">
+    <div class="subject-card math" onclick="showCategory('math')"><div class="s-badge" id="math-badge">—</div><div class="s-icon">🔢</div><div class="s-name">Math</div><div class="s-count">Multiply · Divide · Fill-in</div></div>
+    <div class="subject-card read" onclick="showCategory('reading')"><div class="s-badge" id="reading-badge">—</div><div class="s-icon">📖</div><div class="s-name">Reading</div><div class="s-count">Words · Stories · Rhymes</div></div>
+    <div class="subject-card life" onclick="showCategory('life')"><div class="s-badge" id="life-badge">—</div><div class="s-icon">🏠</div><div class="s-name">Life Skills</div><div class="s-count">Daily · Safety · Social</div></div>
+    <div class="subject-card sci" onclick="showCategory('science')"><div class="s-badge" id="science-badge">—</div><div class="s-icon">🔬</div><div class="s-name">Science</div><div class="s-count">Nature · Earth · Animals</div></div>
+    <div class="subject-card vocab" style="grid-column:1/-1" onclick="showCategory('vocab')"><div class="s-badge" id="vocab-badge">—</div><div class="s-icon">💬</div><div class="s-name">Vocabulary & Words</div><div class="s-count">Sight Words · Sentences · Meanings</div></div>
+  </div>
+  <button onclick="showScreen('game-setup')" style="background:linear-gradient(135deg,#ffd700,#ff8c00);border:none;border-radius:20px;padding:14px 40px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:900;color:#1a1a00;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.25);margin-bottom:16px;width:100%;max-width:500px;transition:transform .15s;" onmousedown="this.style.transform='scale(.97)'" onmouseup="this.style.transform='scale(1)'">⚡ Game Mode — Beat the Clock!</button>
+  <div class="nav-bar">
+    <button class="nav-item active" onclick="showScreen('home')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-item" onclick="showScreen('progress')"><span class="nav-icon">📊</span><span class="nav-label">Progress</span></button>
+    <button class="nav-item" onclick="showScreen('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<!-- ══ CATEGORY MENU ══════════════════════════════════ -->
+<div class="screen" id="category">
+  <div class="cat-hdr">
+    <button class="cat-back" onclick="showScreen('home')">←</button>
+    <div class="cat-title" id="cat-title">📚 Choose Topic</div>
+  </div>
+  <div class="cat-sub" id="cat-sub">What would you like to practice today?</div>
+  <div id="cat-content" style="width:100%;max-width:500px;display:flex;flex-direction:column;gap:0;align-items:stretch;padding-bottom:20px;"></div>
+</div>
+
+<div class="screen" id="quiz">
+  <div class="quiz-hdr">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <span class="quiz-subj" id="quiz-subj">Math</span>
+    <button class="mute-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
+    <div class="quiz-stars">⭐ <span id="quiz-stars">0</span></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-lbl" id="prog-lbl">Question 1 of 10</div>
+    <div class="prog-bg"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="q-box" id="q-box"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="transition-warn" id="transition-warn">Almost done! Last 2 questions 🌟</div>
+  <div class="mic-st" id="mic-st"></div>
+  <div class="ans-grid" id="ans-grid"></div>
+  <div class="quiz-bottom">
+    <button class="break-btn-big" id="break-btn-big" onclick="startCalm()">🧘 Break</button>
+    <button class="break-btn-small" id="break-btn-small" onclick="startCalm()">🧘</button>
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+    <button class="next-btn" id="next-btn" onclick="nextQ()">Next ➡️</button>
+  </div>
+</div>
+
+
+<!-- GAME SETUP -->
+<div class="screen" id="game-setup">
+  <div style="font-size:3rem;margin-top:12px;animation:float 2s ease-in-out infinite">⚡</div>
+  <div class="gs-title">Game Mode</div>
+  <div class="gs-sub">How many can Shaan get right?</div>
+
+  <div class="gs-section">Pick a subject</div>
+  <div class="gs-subj-grid">
+    <div class="gs-subj-card math sel" onclick="gsPickSubj('math',this)"><div class="gs-s-icon">🔢</div><div class="gs-s-name">Math</div></div>
+    <div class="gs-subj-card read" onclick="gsPickSubj('reading',this)"><div class="gs-s-icon">📖</div><div class="gs-s-name">Reading</div></div>
+    <div class="gs-subj-card life" onclick="gsPickSubj('life',this)"><div class="gs-s-icon">🏠</div><div class="gs-s-name">Life Skills</div></div>
+    <div class="gs-subj-card sci" onclick="gsPickSubj('science',this)"><div class="gs-s-icon">🔬</div><div class="gs-s-name">Science</div></div>
+    <div class="gs-subj-card mix" onclick="gsPickSubj('mix',this)" style="grid-column:1/-1"><div class="gs-s-icon">🌟</div><div class="gs-s-name">Mix — All Subjects!</div></div>
+  </div>
+
+  <div class="gs-section">Time limit</div>
+  <div class="gs-row">
+    <button class="gs-btn" onclick="gsPickTime(30,this)">30 sec</button>
+    <button class="gs-btn active" onclick="gsPickTime(60,this)">60 sec</button>
+    <button class="gs-btn" onclick="gsPickTime(90,this)">90 sec</button>
+    <button class="gs-btn" onclick="gsPickTime(120,this)">2 min</button>
+  </div>
+
+  <button class="gs-start" onclick="startGame()">⚡ Let's Go!</button>
+  <button class="gs-btn" onclick="showScreen('home')" style="margin-top:12px;align-self:center">← Back</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div class="screen" id="game">
+  <div class="game-hdr">
+    <button class="back-btn" onclick="stopGame()">←</button>
+    <span class="game-subj" id="game-subj">Math</span>
+    <div class="game-score-wrap">
+      <div class="game-score-lbl">Score</div>
+      <div class="game-score" id="game-score">0</div>
+    </div>
+  </div>
+  <div class="timer-wrap">
+    <div class="timer-bg"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+  </div>
+  <div class="q-box" id="game-q-box"></div>
+  <div class="feedback" id="game-feedback"></div>
+  <div class="ans-grid" id="game-ans-grid"></div>
+</div>
+
+<!-- GAME END -->
+<div class="screen" id="game-end">
+  <div class="ge-trophy">🏆</div>
+  <div class="ge-title" id="ge-title">Time's up!</div>
+  <div class="ge-score" id="ge-score">0</div>
+  <div class="ge-score-lbl">points</div>
+  <div class="ge-best" id="ge-best">Personal best: 0</div>
+  <div style="font-size:1.6rem;margin-bottom:16px">⭐⭐⭐⭐⭐</div>
+  <button class="ge-btn" onclick="startGame()">⚡ Play Again!</button>
+  <button class="ge-btn outline" onclick="showScreen('game-setup')">Change Settings</button>
+  <button class="ge-btn outline" onclick="showScreen('home')">🏠 Home</button>
+</div>
+
+<!-- SCORE FLASH -->
+<div class="score-flash" id="score-flash"></div>
+
+
+<!-- SETTINGS -->
+<div class="screen" id="settings">
+  <div style="background:rgba(0,0,0,.2);padding:env(safe-area-inset-top,12px) 16px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0;">
+    <button class="back-btn" style="color:white" onclick="showScreen('home')">←</button>
+    <div class="set-title">Settings</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:0;">
+
+    <!-- SOUND -->
+    <div class="set-card">
+      <div class="set-card-title">🔊 Sound</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Voice Feedback</div><div class="set-row-sub">Cheers and praise after correct answers</div></div>
+        <button class="set-toggle on" id="tog-voice" onclick="toggleSetting('voice',this)"></button>
+      </div>
+      <div class="set-row">
+        <div><div class="set-row-label">Volume</div></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:.8rem;color:rgba(255,255,255,.6)">🔈</span>
+          <input type="range" class="vol-slider" id="vol-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+          <span style="font-size:.8rem;color:rgba(255,255,255,.6)">🔊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSION -->
+    <div class="set-card">
+      <div class="set-card-title">📚 Session Length</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Questions per round</div></div>
+        <div class="set-opts">
+          <button class="set-opt" id="sq5" onclick="setQCount(5,this)">5</button>
+          <button class="set-opt active" id="sq10" onclick="setQCount(10,this)">10</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAK BUTTON -->
+    <div class="set-card">
+      <div class="set-card-title">🧘 Break Button</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Show break button during quiz</div></div>
+        <button class="set-toggle on" id="tog-break" onclick="toggleSetting('break',this)"></button>
+      </div>
+      <div class="set-row" id="break-style-row">
+        <div><div class="set-row-label">Button style</div><div class="set-row-sub">Big = easier to find · Small = less distraction</div></div>
+        <div class="set-opts">
+          <button class="set-opt active" id="bs-big" onclick="setBreakStyle('big',this)">Big</button>
+          <button class="set-opt" id="bs-small" onclick="setBreakStyle('small',this)">Small</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALM SCREEN -->
+    <div class="set-card">
+      <div class="set-card-title">🌙 Calm Break Duration</div>
+      <div class="set-row">
+        <div><div class="set-row-label">How long is the break?</div></div>
+        <div class="set-opts">
+          <button class="set-opt" id="cd30" onclick="setCalmDur(30,this)">30s</button>
+          <button class="set-opt active" id="cd60" onclick="setCalmDur(60,this)">60s</button>
+          <button class="set-opt" id="cd90" onclick="setCalmDur(90,this)">90s</button>
+          <button class="set-opt" id="cd120" onclick="setCalmDur(120,this)">2 min</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- MIC -->
+    <div class="set-card">
+      <div class="set-card-title">🎤 Microphone</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Show mic button</div><div class="set-row-sub">Let Shaan answer by saying the color</div></div>
+        <button class="set-toggle on" id="tog-mic" onclick="toggleSetting('micOn',this)"></button>
+      </div>
+    </div>
+    <!-- GAME MODE -->
+    <div class="set-card">
+      <div class="set-card-title">⚡ Game Mode Default Timer</div>
+      <div class="set-row">
+        <div><div class="set-row-label">Default time limit</div></div>
+        <div class="set-opts">
+          <button class="set-opt" id="gt30" onclick="setGameTime(30,this)">30s</button>
+          <button class="set-opt active" id="gt60" onclick="setGameTime(60,this)">60s</button>
+          <button class="set-opt" id="gt90" onclick="setGameTime(90,this)">90s</button>
+          <button class="set-opt" id="gt120" onclick="setGameTime(120,this)">2 min</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:16px"></div>
+  </div>
+</div>
+
+<!-- CALM BREAK SCREEN -->
+<div class="screen" id="calm">
+  <div class="calm-title">Take a Deep Breath 🌙</div>
+  <div class="calm-sub">Relax… Shaan is doing great</div>
+  <div class="calm-anim">
+    <div class="calm-circle calm-c1"></div>
+    <div class="calm-circle calm-c2"></div>
+    <div class="calm-circle calm-c3"></div>
+    <div class="calm-note">🎵</div>
+  </div>
+  <div class="calm-timer-wrap">
+    <div class="calm-timer-bg"><div class="calm-timer-fill" id="calm-fill" style="width:100%"></div></div>
+    <div class="calm-timer-lbl" id="calm-lbl">60 seconds</div>
+  </div>
+  <button class="calm-ready-btn" onclick="endCalm()">I'm Ready ✨</button>
+</div>
+
+<!-- PROGRESS -->
+<div class="screen" id="progress">
+  <div class="prog-hdr">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <h2>Shaan's Progress</h2>
+  </div>
+  <div class="prog-content" id="prog-content"></div>
+  <div class="nav-bar">
+    <button class="nav-item" onclick="showScreen('home')"><span class="nav-icon">🏠</span><span class="nav-label">Home</span></button>
+    <button class="nav-item active" onclick="showScreen('progress')"><span class="nav-icon">📊</span><span class="nav-label">Progress</span></button>
+    <button class="nav-item" onclick="showScreen('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="cel" id="cel">
+  <div class="trophy">🏆</div>
+  <h1>Shaan, you are AMAZING!</h1>
+  <p id="cel-msg"></p>
+  <div style="font-size:2rem">⭐⭐⭐⭐⭐</div>
+  <button class="cel-btn" onclick="newRound()">Keep Going! 🚀</button>
+  <button class="cel-btn outline" onclick="showScreen('home')" style="margin-top:6px">Back to Home</button>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
