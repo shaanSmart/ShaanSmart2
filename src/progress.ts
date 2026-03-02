@@ -1,11 +1,15 @@
 import type { ProgressData, SubjectStats } from './types'
 
 const PROG_KEY = 'shaansmart_v1'
-let P: ProgressData = { totalStars:0, sessions:[], bySubject:{}, streak:0, lastDate:null }
+
+const empty = (): ProgressData => ({ totalStars:0, sessions:[], bySubject:{}, streak:0, lastDate:null })
+let P: ProgressData = empty()
 
 export function loadProgress(): ProgressData {
-  try { P = { ...P, ...JSON.parse(localStorage.getItem(PROG_KEY) ?? '{}') } } catch (_) { P = { totalStars:0, sessions:[], bySubject:{}, streak:0, lastDate:null } }
-  P.totalStars = P.totalStars??0; P.sessions = P.sessions??[]; P.bySubject = P.bySubject??{}; P.streak = P.streak??0; P.lastDate = P.lastDate??null
+  try {
+    const raw = localStorage.getItem(PROG_KEY)
+    P = raw ? { ...empty(), ...JSON.parse(raw) } : empty()
+  } catch (_) { P = empty() }
   return P
 }
 
