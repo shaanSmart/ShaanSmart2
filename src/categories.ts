@@ -92,7 +92,3 @@ export function getCategorySections(subject: string): CategorySection[] {
       ];
     default:
       return [];
-  }
-}
-
-export { SUBJECTS, getCategoriesForSubject, getSectionsForSubject, findCategory, resolveSubject }
