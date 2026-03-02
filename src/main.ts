@@ -686,7 +686,7 @@ export function gsPickTime(t: number, btn: HTMLElement): void {
 // ── Expose to HTML onclick attributes ────────────────────────────────
 // (During migration, global functions bridge HTML onclick= calls)
 
-const G = window as Window & Record<string, unknown>
+const G = window as any
 G.showScreen    = showScreen
 G.authTab       = authTab
 G.authSubmit    = () => setTimeout(() => void authSubmit(), 100)
