@@ -53,7 +53,7 @@ export function setupMic(cb: MicCallbacks): void {
   recognition = new SR()
   recognition.continuous = false; recognition.interimResults = true; recognition.lang = 'en-US'
   recognition.onstart = () => { micOn = true; cb.onStateChange('listening') }
-  recognition.onresult = e => { let t = ''; for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript; t = t.trim().toLowerCase(); if (t) cb.onInterim(t) }
+  recognition.onresult = (e: Event) => { let t = ''; for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript; t = t.trim().toLowerCase(); if (t) cb.onInterim(t) }
   recognition.onend = () => { micOn = false; cb.onStateChange('idle') }
   recognition.onerror = () => { micOn = false; cb.onStateChange('idle') }
 }

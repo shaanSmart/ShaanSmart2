@@ -1,3 +1,4 @@
+import type { MasteryLevel } from "./types"
 // ══════════════════════════════════════════════════════════════════════
 // SHAANSMART — DATABASE LAYER
 // All Supabase calls live here. Nothing else touches supa directly.
